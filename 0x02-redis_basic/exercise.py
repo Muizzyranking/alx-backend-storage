@@ -3,9 +3,12 @@
 A module for using the Redis NoSQL database
 """
 
-import redis
 import uuid
-from typing import Union
+from typing import Callable, Optional, Union, TypeVar, cast
+
+import redis
+
+T = TypeVar('T', str, bytes, int, float)
 
 
 class Cache:
@@ -23,3 +26,23 @@ class Cache:
         key = str(uuid.uuid4())
         self._redis.set(key, data)
         return key
+
+    def get(self, key: str,
+            fn: Optional[Callable[[bytes], T]] = None
+            ) -> Optional[T]:
+        """Get data from redis database"""
+
+        data = self._redis.get(key)
+        if data is None:
+            return None
+        assert isinstance(data, bytes), "Expected data to be bytes"
+        if fn is not None:
+            return fn(data)
+        return cast(T, data)
+
+    def get_str(self, key: str) -> Optional[str]:
+        """Get string data from redis database"""
+        return self.get(key, fn=lambda d: d.decode("utf-8"))
+
+    def get_int(self, key: str) -> Optional[int]:
+        return self.get(key, fn=int)
