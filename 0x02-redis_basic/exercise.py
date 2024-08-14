@@ -4,11 +4,28 @@ A module for using the Redis NoSQL database
 """
 
 import uuid
-from typing import Callable, Optional, Union, TypeVar, cast
+from functools import wraps
+from typing import Callable, Optional, TypeVar, Union, cast
 
 import redis
 
 T = TypeVar('T', str, bytes, int, float)
+
+
+def count_calls(fn: Callable) -> Callable:
+    """
+    Count the number of calls to a function
+    """
+    @wraps(fn)
+    def wrapper(self, *args, **kwargs):
+        """
+        Wrapper function
+        """
+        key = fn.__qualname__
+        self._redis.incr(key)
+        return fn(self, *args, **kwargs)
+
+    return wrapper
 
 
 class Cache:
@@ -21,6 +38,7 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb(True)
 
+    @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """Store data in redis database"""
         key = str(uuid.uuid4())
@@ -35,6 +53,7 @@ class Cache:
         data = self._redis.get(key)
         if data is None:
             return None
+        # Ensure data is bytes
         assert isinstance(data, bytes), "Expected data to be bytes"
         if fn is not None:
             return fn(data)
