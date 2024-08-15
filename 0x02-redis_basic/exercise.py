@@ -55,33 +55,28 @@ def call_history(method: Callable) -> Callable:
 
 
 def replay(fn: Callable) -> None:
-    """Displays the call history of a Cache class' method."""
-    # Ensure the function is valid and has a __self__ attribute
+    '''Displays the call history of a Cache class' method.
+    '''
     if fn is None or not hasattr(fn, '__self__'):
         return
-
-    # Retrieve the Redis instance safely
     redis_store = getattr(fn.__self__, '_redis', None)
     if not isinstance(redis_store, redis.Redis):
         return
-
-    # Generate keys for inputs and outputs
     fxn_name = fn.__qualname__
-    in_key = f'{fxn_name}:inputs'
-    out_key = f'{fxn_name}:outputs'
-
-    # Check how many times the function was called
-    fxn_call_count = int(redis_store.get(fxn_name)
-                         ) if redis_store.exists(fxn_name) else 0
-    print(f'{fxn_name} was called {fxn_call_count} times:')
-
-    # Retrieve and display the inputs and outputs
+    in_key = '{}:inputs'.format(fxn_name)
+    out_key = '{}:outputs'.format(fxn_name)
+    fxn_call_count = 0
+    if redis_store.exists(fxn_name) != 0:
+        fxn_call_count = int(redis_store.get(fxn_name))
+    print('{} was called {} times:'.format(fxn_name, fxn_call_count))
     fxn_inputs = redis_store.lrange(in_key, 0, -1)
     fxn_outputs = redis_store.lrange(out_key, 0, -1)
-
     for fxn_input, fxn_output in zip(fxn_inputs, fxn_outputs):
-        print(
-            f'{fxn_name}(*{fxn_input.decode("utf-8")}) -> {fxn_output.decode("utf-8")}')
+        print('{}(*{}) -> {}'.format(
+            fxn_name,
+            fxn_input.decode("utf-8"),
+            fxn_output,
+        ))
 
 
 class Cache:
