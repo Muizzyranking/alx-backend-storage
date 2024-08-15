@@ -12,18 +12,18 @@ import redis
 T = TypeVar('T', str, bytes, int, float)
 
 
-def count_calls(fn: Callable) -> Callable:
+def count_calls(method: Callable) -> Callable:
     """
     Count the number of calls to a function
     """
-    @wraps(fn)
+    @wraps(method)
     def wrapper(self, *args, **kwargs):
         """
         Wrapper function
         """
-        key = fn.__qualname__
+        key = method.__qualname__
         self._redis.incr(key)
-        return fn(self, *args, **kwargs)
+        return method(self, *args, **kwargs)
 
     return wrapper
 
