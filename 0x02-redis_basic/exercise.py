@@ -5,7 +5,7 @@ A module for using the Redis NoSQL database
 
 import uuid
 from functools import wraps
-from typing import Callable, Optional, TypeVar, Union, cast
+from typing import Callable, Optional, TypeVar, Union, cast, Any
 
 import redis
 
@@ -35,7 +35,7 @@ def call_history(method: Callable) -> Callable:
     """
 
     @wraps(method)
-    def wrapper(self, *args, **kwargs) -> Union[str, bytes, int, float]:
+    def wrapper(self, *args, **kwargs) -> Any:
         """Wrapper function to store call history and execute the method."""
         input_key = "{}:inputs".format(method.__qualname__)
         output_key = "{}:outputs".format(method.__qualname__)
