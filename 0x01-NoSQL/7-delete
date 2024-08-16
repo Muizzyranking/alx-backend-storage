@@ -1,0 +1,5 @@
+// Use the 'deleteMany()' method to delete all matching documents
+db.school.deleteMany(
+    { name: "Holberton school" }  // Match condition: documents with name "Holberton school"
+);
+
