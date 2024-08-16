@@ -1,0 +1,5 @@
+// Specify the query condition to match documents where the 'name' field equals "Holberton school"
+db.school.find({
+    name: "Holberton school"
+});
+
