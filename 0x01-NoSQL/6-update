@@ -1,0 +1,7 @@
+// Use the 'update()' method to update all matching documents with the 'multi: true' option
+db.school.update(
+    { name: "Holberton school" },  
+    { $set: { address: "972 Mission street" } },
+    { multi: true }  // Option to update multiple documents
+);
+
