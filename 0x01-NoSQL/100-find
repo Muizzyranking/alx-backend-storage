@@ -1,0 +1,5 @@
+// The regex "^Holberton" matches any string that begins with "Holberton".
+db.school.find(
+    { name: { $regex: "^Holberton" } }
+);
+
