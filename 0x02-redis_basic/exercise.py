@@ -55,7 +55,12 @@ def call_history(method: Callable) -> Callable:
 
 
 def replay(method: Callable[['Cache'], None]) -> None:
-    """Replay the history of calls to a particular function."""
+    """
+    Replay the history of calls to a particular function
+
+    Args:
+        method (Callable): The method to replay the history for
+    """
     redis_instance = method.__self__._redis
     input_key = f"{method.__qualname__}:inputs"
     output_key = f"{method.__qualname__}:outputs"
