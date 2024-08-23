@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-""" expiring web cache module """
+""" Expiring web cache module """
 
 from functools import wraps
 import redis
@@ -24,18 +24,17 @@ def count_calls(method: Callable) -> Callable:
     """
     @wraps(method)
     def wrapper(*args, **kwargs):
-        # Increment the count in Redis
-        # using the method's qualified name
-        r.incr(f"count:{method.__qualname__}")
-        # Execute the original method
-        # and return its output
+        url = args[0]
+        # Increment the count in Redis for the specific URL
+        r.incr(f"count:{url}")
+        # Execute the original method and return its output
         return method(*args, **kwargs)
 
     return wrapper
 
 
 @count_calls
-async def get_page(url: str) -> str:
+def get_page(url: str) -> str:
     """
     Fetches the HTML content from a given URL
     and caches it in Redis with an expiration time.
@@ -50,14 +49,13 @@ async def get_page(url: str) -> str:
     cached_content = r.get(f"cache:{url}")
     if cached_content:
         # If cached, decode and return the content
-        return (await cached_content).decode('utf-8')
+        return cached_content.decode('utf-8')
 
     # If not cached, fetch the content using requests
     response = requests.get(url)
     html_content = response.text
 
-    # Cache the content in Redis
-    # with a 10-second expiration time
+    # Cache the content in Redis with a 10-second expiration time
     r.setex(f"cache:{url}", 10, html_content)
 
     return html_content
@@ -65,6 +63,6 @@ async def get_page(url: str) -> str:
 
 if __name__ == "__main__":
     # Test the function with a slow response URL
-    url = "http://slowwly.robertomurray.co.uk/"
+    url = "http://slowwly.robertomurray.co.uk"
     print(get_page(url))  # Fetch and cache the page
     print(get_page(url))  # Retrieve the cached page
